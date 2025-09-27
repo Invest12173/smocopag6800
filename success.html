@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ส่งคำขอสำเร็จ</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body {
+      background: linear-gradient(135deg, #e0f7fa, #ffffff);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+    }
+    .box {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+      text-align: center;
+      max-width: 420px;
+      width: 90%;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+    h1 { color: #00695c; margin-bottom: 10px; }
+    p { color: #37474f; font-size: 16px; margin-bottom: 20px; }
+    .btn {
+      background: #26a69a;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+      text-decoration: none;
+      display: inline-block;
+      margin: 5px;
+      transition: 0.3s;
+    }
+    .btn:hover { background: #00897b; }
+    .loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 16px;
+      color: #00695c;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #26a69a;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      margin-bottom: 10px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+  <div class="loading" id="loadingMsg" style="display:none;">
+    <div class="spinner"></div>
+    <p>กำลังนำคุณกลับไปที่หน้าแบบฟอร์ม...</p>
+  </div>
+
+  <div class="box" id="successBox" style="display:none;">
+    <i class="fa-solid fa-circle-check" style="font-size:48px;color:#26a69a"></i>
+    <h1>ส่งคำขอสำเร็จ</h1>
+    <p>ระบบได้รับคำขอจองห้องของคุณแล้ว ขอบคุณที่ใช้บริการ</p>
+    <a href="booking.html" class="btn"><i class="fa-solid fa-arrow-left"></i> กลับไปหน้าจองห้อง</a>
+    <a href="#" id="downloadBtn" class="btn" onclick="downloadPDF(event)"><i class="fa-solid fa-file-pdf"></i> ดาวน์โหลดสรุป</a>
+  </div>
+
+  <script>
+    function getBookingData() {
+      try {
+        const raw = sessionStorage.getItem('bookingData');
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        return parsed && typeof parsed === 'object' ? parsed : null;
+      } catch (e) {
+        console.warn('Failed to parse bookingData:', e);
+        return null;
+      }
+    }
+
+    function downloadPDF(e) {
+      e.preventDefault();
+      const data = getBookingData();
+      if (!data) return;
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      let y = 20;
+      doc.setFontSize(18);
+      doc.text('สรุปการจองห้อง', 105, y, { align: 'center' });
+      doc.setFontSize(12);
+      y += 10;
+      for (const [key, value] of Object.entries(data)) {
+        doc.text(`${key} : ${value}`, 20, y);
+        y += 8;
+      }
+      doc.save('สรุปการจอง.pdf');
+    }
+
+    (function init() {
+      const data = getBookingData();
+      if (!data) {
+        document.getElementById('loadingMsg').style.display = 'flex';
+        setTimeout(() => {
+          window.location.href = 'booking.html';
+        }, 2000);
+      } else {
+        document.getElementById('successBox').style.display = 'block';
+      }
+    })();
+  </script>
+</body>
+</html>
